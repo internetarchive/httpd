@@ -1,3 +1,4 @@
+/* eslint-disable no-console, no-use-before-define */
 
 import { serve } from 'https://deno.land/std/http/server.ts'
 import { serveDir } from 'https://deno.land/std/http/file_server.ts'
@@ -22,22 +23,16 @@ export default async function httpd(handler, opts = {}) {
       try {
         const res = handler ? handler(req, headers) : undefined
         if (res) {
-          // eslint-disable-next-line no-use-before-define
           log(req)
           return res
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.warn({ err })
-        // eslint-disable-next-line no-use-before-define
         log(req, 500)
-        // eslint-disable-next-line no-use-before-define
         return new Response(error('Internal Server Error'), { status: 500, headers })
       }
 
-      // eslint-disable-next-line no-use-before-define
       log(req, 404)
-      // eslint-disable-next-line no-use-before-define
       return new Response(error('Not Found'), { status: 404, headers })
     }
   }, { port })
@@ -141,6 +136,5 @@ function log(req, status = 200) {
   const { pathname } = new URL(req.url)
   const s = `${dateFmt} [${req.method}] ${pathname} ${status}`
   // using console.debug instead of console.log so chrome inspect users can hide request logs
-  // eslint-disable-next-line no-console
   console.debug(s)
 }
