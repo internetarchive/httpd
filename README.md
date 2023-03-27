@@ -11,6 +11,7 @@ httpd((req, headers) => {
     return new Response('You are asking for some details', { headers })
 })
 ```
+You can pass a 2nd optional `opts` hashmap/object argument to `httpd()` to customize.
 
 ## Defaults
 - HTTP port 5000 -- override with `opts` arg like: `{ port: 8888 }` or CLI arg like: `-p8888`
@@ -22,10 +23,10 @@ If that pathname doesn't map to a static file or dir (and get served directly), 
 `handler()` gets invoked.
 
 You can return a `Response` object (Promise) or not return anything at all.
-For the former case, we default the reply `content-type` to `text/html`.
-  To override, use the optional 2nd argument `headers` to your handler, and change as desired, eg:
-    headers.set('content-type', 'text/plain')
-For the latter case, we'll emit a 404 (lightly customized) page.
+- For the former case, we default the reply `content-type` to `text/html`.
+  - To override, use the optional 2nd argument `headers` to your handler, and change as desired, eg:
+    `headers.set('content-type', 'text/plain')`
+- For the latter case, we'll emit a 404 (lightly customized) page.
 
 If your handler throws an exception, a general 500 page will be served.
 
@@ -35,6 +36,10 @@ NOTE: This httpd daemon does NOT show dotfiles in dir listings (on by default) -
 
 
 ## More info
+Main methods used by `httpd`:
+- import { serve } from 'https://deno.land/std/http/server.ts'
+- import { serveDir } from 'https://deno.land/std/http/file_server.ts'
+
 The hyper server in rust:
 - https://deno.land/manual/runtime/http_server_apis
 - https://medium.com/deno-the-complete-reference/native-http-server-hyper-in-deno-1355c1171981
