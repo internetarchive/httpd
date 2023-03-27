@@ -4,7 +4,7 @@ It serves static files & dirs, with arbitrary handling using an optional `handle
 
 ## Example
 ```js
-import httpd from 'https://xxx/httpd.js'
+import httpd from 'https://deno.land/x/httpd/mod.js'
 
 httpd((req, headers) => {
   if (new URL(req.url).pathname.startsWith('/details/'))
