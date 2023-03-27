@@ -9,13 +9,14 @@ export default async function httpd(handler, opts = {}) {
 
   return serve(async (req) => {
     try {
-      // make us throw an exception if not a file/dir -- so we can send custom 404 page
-      Deno.statSync(new URL(req.url).pathname.slice(1) || '.')
-
-      return await serveDir(req, {
+      const serve_opts = {
         enableCors: 'cors' in opts ? opts.cors : true,
         showDirListing: 'ls' in opts ? opts.ls : true,
-      })
+      }
+      // make us throw an exception if not a file/dir -- so we can send custom 404 page
+      Deno.statSync(new URL(req.url).pathname.slice(1) || serve_opts.showDirListing ? '.' : 'index.html')
+
+      return await serveDir(req, serve_opts)
     } catch {
       const headers = new Headers()
       headers.append('content-type', 'text/html')
