@@ -7,6 +7,9 @@ import { serveDir } from 'https://deno.land/std/http/file_server.ts'
 export default async function httpd(handler, opts = {}) {
   const port = opts.port ?? ((Deno.args.find((e) => e.match(/^-p([0-9]{3,5})$/)?.pop())) || '-p5000').slice(2)
 
+  const docroot = Deno.cwd()
+  console.log({ docroot })
+
   return serve(async (req) => {
     try {
       const serve_opts = {
@@ -14,6 +17,7 @@ export default async function httpd(handler, opts = {}) {
         showDirListing: 'ls' in opts ? opts.ls : true,
       }
       // make us throw an exception if not a file/dir -- so we can send custom 404 page
+      Deno.chdir(docroot)
       Deno.statSync(new URL(req.url).pathname.slice(1) || (serve_opts.showDirListing ? '.' : 'index.html'))
 
       return await serveDir(req, serve_opts)
