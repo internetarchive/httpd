@@ -5,7 +5,7 @@ import { serveDir } from 'https://deno.land/std/http/file_server.ts'
 
 
 export default async function httpd(handler, opts = {}) {
-  const port = opts.port ?? ((Deno.args.find((e) => e.match(/^-p([0-9]{3,5})$/)?.pop())) || '-p5000').slice(2)
+  const port = Number(opts.port ?? ((Deno.args.find((e) => e.match(/^-p([0-9]{3,5})$/)?.pop())) || '-p5000').slice(2))
 
   const docroot = Deno.cwd()
   console.log({ docroot })
