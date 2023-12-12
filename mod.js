@@ -4,13 +4,20 @@ import { serveDir } from 'https://deno.land/std/http/file_server.ts'
 
 
 /**
+ * Serves static files via `Deno.serve()` in the CWD that this script is run in.
+ * Dynamic content can be setup via a callback handler which gets invoked for urls corresponding
+ * to static files that don't exist.
+ *
+ * The default http port (5000) can be overridden in the `opts` argument or on the command line with
+ * an argument like `-p8080`.
  *
  * @param {function} handler callback with `Request` and `Headers` object args -- invoked when there
  *                        isn't a static file corresponding to the request.  So you can do dynamic
  *                        request routing by returning a `Response` or promise of a `Response`;
  *                        return nothing to cause a 404.
  * @param {object} opts options:
- *                        cors (truthy for CORS open);
+ *                        port (defaults to listen on :5000);
+ *                        cors (falsy to turn off default CORS open);
  *                        ls (falsy to turn off automtic dir listings);
  *                        headers (array of one or more strings to send in responses (eg: CSP))
  *
