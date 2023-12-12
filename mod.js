@@ -1,30 +1,64 @@
 /* eslint-disable no-console, no-use-before-define */
 
-import { serve } from 'https://deno.land/std/http/server.ts'
 import { serveDir } from 'https://deno.land/std/http/file_server.ts'
 
 
-export default async function httpd(handler, opts = {}) {
+/**
+ *
+ * @param {function} handler callback with `Request` and `Headers` object args -- invoked when there
+ *                        isn't a static file corresponding to the request.  So you can do dynamic
+ *                        request routing by returning a `Response` or promise of a `Response`;
+ *                        return nothing to cause a 404.
+ * @param {object} opts options:
+ *                        cors (truthy for CORS open);
+ *                        ls (falsy to turn off automtic dir listings);
+ *                        headers (array of one or more strings to send in responses (eg: CSP))
+ *
+ * @returns {Response|Promise<Response>|undefined}
+ */
+export default function httpd(handler, opts = {}) {
   const port = Number(opts.port ?? ((Deno.args.find((e) => e.match(/^-p([0-9]{3,5})$/)?.pop())) || '-p5000').slice(2))
 
   const docroot = Deno.cwd()
   console.log({ docroot })
 
-  return serve(async (req) => {
+  const headers_defaults = new Headers()
+  headers_defaults.append('content-type', 'text/html')
+  for (const header of (opts.headers ?? [])) {
+    const headerSplit = header.split(':')
+    headers_defaults.append(headerSplit[0], headerSplit.slice(1).join(':'))
+  }
+  if (opts.cors) {
+    headers_defaults.append('access-control-allow-origin', '*')
+    headers_defaults.append(
+      'access-control-allow-headers',
+      'Origin, X-Requested-With, Content-Type, Accept, Range',
+    )
+  }
+
+
+  return Deno.serve({ port }, async (req) => {
     try {
+      // make us throw an exception if not a file/dir -- so we can send custom 404 page
+      Deno.chdir(docroot)
+      const url = new URL(req.url)
+      Deno.statSync(url.pathname.slice(1) || ('ls' in opts ? '.' : 'index.html'))
+
+      // GET requests for static .htm(l) files without CGI args can be safely served without a CSP
+      // header (since some documentation pages might use inline <script> tags, etc.)
+      const safe_htm = req.method === 'GET' &&
+        url.search === '' && url.hash === '' &&
+        url.username === '' && url.password === '' &&
+        (url.pathname.endsWith('.html') || url.pathname.endsWith('.htm'))
+
       const serve_opts = {
         enableCors: 'cors' in opts ? opts.cors : true,
         showDirListing: 'ls' in opts ? opts.ls : true,
+        headers: (opts.headers ?? []).filter((e) => !safe_htm || !e.match(/^content-security-policy/)),
       }
-      // make us throw an exception if not a file/dir -- so we can send custom 404 page
-      Deno.chdir(docroot)
-      Deno.statSync(new URL(req.url).pathname.slice(1) || (serve_opts.showDirListing ? '.' : 'index.html'))
-
       return await serveDir(req, serve_opts)
     } catch {
-      const headers = new Headers()
-      headers.append('content-type', 'text/html')
-
+      const headers = new Headers(headers_defaults)
       try {
         const res = handler ? handler(req, headers) : undefined
         if (res) {
@@ -40,7 +74,7 @@ export default async function httpd(handler, opts = {}) {
       log(req, 404)
       return new Response(error('Not Found'), { status: 404, headers })
     }
-  }, { port })
+  })
 }
 
 
