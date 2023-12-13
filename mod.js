@@ -30,7 +30,7 @@ export default function httpd(handler, opts = {}) {
   console.log({ docroot })
 
   const headers_defaults = new Headers()
-  headers_defaults.append('content-type', 'text/html')
+  headers_defaults.append('content-type', 'text/html') // default to html, caller can override
   for (const header of (opts.headers ?? [])) {
     const headerSplit = header.split(':')
     headers_defaults.append(headerSplit[0], headerSplit.slice(1).join(':'))
@@ -75,10 +75,12 @@ export default function httpd(handler, opts = {}) {
       } catch (err) {
         console.warn({ err })
         log(req, 500)
+        headers.set('content-type', 'text/html') // in case caller overrode (and error happened)
         return new Response(error('Internal Server Error'), { status: 500, headers })
       }
 
       log(req, 404)
+      headers.set('content-type', 'text/html') // in case caller overrode
       return new Response(error('Not Found'), { status: 404, headers })
     }
   })
