@@ -37,7 +37,7 @@ NOTE: This httpd daemon does NOT show dotfiles in dir listings (on by default) -
 
 ## More info
 Main methods used by `httpd`:
-- import { serve } from 'https://deno.land/std/http/server.ts'
+- [Deno.serve()](https://deno.land/api?s=Deno.serve)
 - import { serveDir } from 'https://deno.land/std/http/file_server.ts'
 
 The hyper server in rust:
