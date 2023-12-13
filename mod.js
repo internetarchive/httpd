@@ -49,7 +49,7 @@ export default function httpd(handler, opts = {}) {
       // make us throw an exception if not a file/dir -- so we can send custom 404 page
       Deno.chdir(docroot)
       const url = new URL(req.url)
-      Deno.statSync(url.pathname.slice(1) || ('ls' in opts ? '.' : 'index.html'))
+      Deno.statSync(url.pathname.slice(1) || (opts.ls ? '.' : 'index.html'))
 
       // GET requests for static .htm(l) files without CGI args can be safely served without a CSP
       // header (since some documentation pages might use inline <script> tags, etc.)
